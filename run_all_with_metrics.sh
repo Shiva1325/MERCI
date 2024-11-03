@@ -2,7 +2,7 @@
 
 # Dataset
 DATASET=("amazon_Electronics")
-num_partitions=(3720)
+num_partitions=(2748 3300)
 
 # Variables
 thread=32  # Hardware core count
