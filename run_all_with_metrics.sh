@@ -65,51 +65,51 @@ run_perf() {
 
 # 1. Preprocess
 cd 1_preprocess/scripts
-python3 amazon_parse_divide_filter.py Office_Products
-./lastfm_dblp.sh dblp
+screen -dmS preprocess python3 amazon_parse_divide_filter.py Office_Products
+screen -dmS preprocess_lastfm ./lastfm_dblp.sh dblp
 
 # 2. Partition
 cd ../../2_partition/scripts
 for (( i=0; i<$len; i++ )); do
-    ./run_patoh.sh ${DATASET[$i]} ${num_partitions[$i]}
+    screen -dmS partition_${DATASET[$i]} ./run_patoh.sh ${DATASET[$i]} ${num_partitions[$i]}
 done
 
 # 3. Clustering
 cd ../../3_clustering
 mkdir -p bin
-make
+screen -dmS clustering_make make
 
 # 4. Performance Evaluation
 cd ../4_performance_evaluation
 mkdir -p bin
-make all
+screen -dmS performance_evaluation_make make all
 
 # Baseline
 for dataset in ${DATASET[@]}; do
     echo "Running baseline on dataset $dataset"
-    sync && echo 1 > /proc/sys/vm/drop_caches
+    sync && sudo sh -c 'echo 1 > /proc/sys/vm/drop_caches'
     output_file="$perf_dir/${dataset}_baseline_perf.txt"
-    run_perf $dataset "./bin/eval_baseline -d $dataset -c $thread -r 5" "N/A" $output_file
+    screen -dmS baseline_$dataset run_perf $dataset "./bin/eval_baseline -d $dataset -c $thread -r 5" "N/A" $output_file
 done
 
 # Remap only
 for (( i=0; i<$len; i++ )); do
     dataset=${DATASET[$i]}
     echo "Running remap-only on dataset $dataset"
-    ../3_clustering/bin/clustering -d $dataset -p ${num_partitions[$i]} --remap-only
-    sync && echo 1 > /proc/sys/vm/drop_caches
+    screen -dmS remap_$dataset ../3_clustering/bin/clustering -d $dataset -p ${num_partitions[$i]} --remap-only
+    sync && sudo sh -c 'echo 1 > /proc/sys/vm/drop_caches'
     output_file="$perf_dir/${dataset}_remap_only_perf.txt"
-    run_perf $dataset "./bin/eval_remap_only -d $dataset -c $thread -r 5 -p ${num_partitions[$i]}" "N/A" $output_file
+    screen -dmS remap_perf_$dataset run_perf $dataset "./bin/eval_remap_only -d $dataset -c $thread -r 5 -p ${num_partitions[$i]}" "N/A" $output_file
 done
 
 # MERCI with different memory ratios
 for (( i=0; i<$len; i++ )); do
     dataset=${DATASET[$i]}
     echo "Running MERCI on dataset $dataset"
-    ../3_clustering/bin/clustering -d $dataset -p ${num_partitions[$i]}
+    screen -dmS merci_$dataset ../3_clustering/bin/clustering -d $dataset -p ${num_partitions[$i]}
     for mem in ${mem_sizes[@]}; do
-        sync && echo 1 > /proc/sys/vm/drop_caches
+        sync && sudo sh -c 'echo 1 > /proc/sys/vm/drop_caches'
         output_file="$perf_dir/${dataset}_merci_${mem}X_perf.txt"
-        run_perf $dataset "./bin/eval_merci -d $dataset -p ${num_partitions[$i]} --memory_ratio $mem -c $thread -r 5" $mem $output_file
+        screen -dmS merci_perf_${dataset}_${mem} run_perf $dataset "./bin/eval_merci -d $dataset -p ${num_partitions[$i]} --memory_ratio $mem -c $thread -r 5" $mem $output_file
     done
 done
