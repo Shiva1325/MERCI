@@ -1,9 +1,9 @@
 #!/bin/bash
 
 # Dataset and Partition Parameters
-DATASET=("amazon_All_Beauty" "amazon_Magazine_Subscriptions" "amazon_Cell_Phones_and_Accessories" "amazon_Clothing_Shoe_and_Jewelry" "amazon_Video_Games" "amazon_Pet_Supplies" "amazon_Electronics" "dblp")
+DATASET=("amazon_All_Beauty" "amazon_Magazine_Subscriptions" "amazon_Cell_Phones_and_Accessories" "amazon_Clothing_Shoes_and_Jewelry" "amazon_Video_Games" "amazon_Pet_Supplies" "amazon_Electronics" "dblp")
 num_partitions=(1272 682 6340 7200 2430 2134 3720 3300)
-DATASET_SIZE=("All_Beauty" "Magazine_Subscriptions" "Cell_Phones_and_Accessories" "Clothing_Shoe_and_Jewelry" "Video_Games" "Pet_Supplies" "Electronics")
+DATASET_SIZE=("All_Beauty" "Magazine_Subscriptions" "Cell_Phones_and_Accessories" "Clothing_Shoes_and_Jewelry" "Video_Games" "Pet_Supplies" "Electronics")
 # Thread settings
 threads=(32 64 128 256)
 len=${#DATASET[@]}
